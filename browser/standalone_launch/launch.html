@@ -13,7 +13,7 @@
 
                 // The client_id that you should have obtained after registering a client at
                 // the EHR.
-                clientId: "my_web_app",
+                clientId: "83448c40-aaeb-48f4-86fb-5571413b33fc",
 
                 // The scopes that you request from the EHR
                 scope: [
@@ -21,13 +21,19 @@
                     "launch/patient",   // Get the current patient in standalone launch mode
                     "launch/encounter", // Get the current encounter in standalone launch mode
                     "openid fhirUser",  // Get the current user
-                    "patient/*.read"    // Read patient data
+                    "user/Appointment.read",
+                    "user/Patient.read",
+                    "user/Questionnaire.read",
+                    "user/QuestionnaireResponse.read",
+                    "user/Appointment.write",
+                    "user/Patient.write",
+                    "user/QuestionnaireResponse.write",
                  ].join(" "),
 
                 // Having this option means that it makes a standalone launch. This is to make
                 // this demo usable out of the box, but it can still to EHR launch if "iss" and
                 // "launch" url parameters are passed.
-                iss: "https://launch.smarthealthit.org/v/r3/sim/eyJoIjoiMSJ9/fhir",
+                iss: "https://fhir-ehr-code.cerner.com/r4/ec2458f2-1e24-41c8-b71b-0e701af7583d",
 
                 // Typically, if your redirectUri points to the root of the current directory
                 // (where the launchUri is), you can omit this option because the default
