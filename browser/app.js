@@ -17,7 +17,12 @@ function App(client) {
 App.prototype.fetchCurrentPatient = function() {
   var render = createRenderer("patient");
   render("Loading...");
-  return this.client.patient.read().then(render, render);
+  return client.request("Patient/12724066", {
+      pageLimit: 1,
+      onPage(bundle) {
+        console.log(bundle);
+      }
+  });
 };
 
 App.prototype.fetchCurrentEncounter = function() {
