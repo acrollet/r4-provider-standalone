@@ -1,8 +1,8 @@
-
 // Our app is written in ES3 so that it works in older browsers!
 
 function createRenderer(id) {
   const output = id ? document.getElementById(id) : document.body;
+  console.log(output);
   return function(data) {
     output.innerText = data && typeof data === "object"
       ? JSON.stringify(data, null, 4)
@@ -10,25 +10,42 @@ function createRenderer(id) {
   };
 }
 
+function renderPatient() {
+  const output = document.getElementById("patient");
+  console.log(output);
+  return function(data) {
+    console.log(data);
+    output.innerHTML = data && typeof data === "object"
+      ? data.text.div
+      : String(data);
+  };
+}
+
+function renderAppt() {
+  const output = document.getElementById("appointments");
+  return function(data) {
+    console.log(data);
+    output.innerHTML = data && typeof data === "object"
+      ? data.entry[0].resource.text.div
+      : String(data);
+  };
+}
+
+
 function App(client) {
   this.client = client;
 }
 
-App.prototype.fetchCurrentPatient = function() {
-  var render = createRenderer("patient");
-  render("Loading...");
-  return client.request("Patient/12724066", {
-      pageLimit: 1,
-      onPage(bundle) {
-        console.log(bundle);
-      }
-  });
+App.prototype.fetchPatient = function() {
+  var render = renderPatient();
+  render("Loading patient...");
+  return this.client.request("Patient/12724066").then(render, render);
 };
 
-App.prototype.fetchCurrentEncounter = function() {
-  var render = createRenderer("encounter");
-  render("Loading...");
-  return this.client.encounter.read().then(render, render);
+App.prototype.fetchAppointments = function() {
+  var render = renderAppt();
+  render("Loading appointments...");
+  return this.client.request("Appointment?patient=12724066&date=ge2020-01-24T00:00:00.000Z&date=lt2020-01-25T00:00:00.000Z").then(render, render);
 };
 
 App.prototype.fetchCurrentUser = function() {
@@ -45,8 +62,8 @@ App.prototype.request = function(requestOptions, fhirOptions) {
 
 App.prototype.renderContext = function() {
   return Promise.all([
-    this.fetchCurrentPatient(),
-    this.fetchCurrentUser(),
+    this.fetchPatient(),
+    this.fetchAppointments(),
     this.fetchCurrentEncounter()
   ]);
 };
@@ -54,4 +71,3 @@ App.prototype.renderContext = function() {
 App.prototype.setLabel = function(containerId, label) {
   document.getElementById(containerId).previousElementSibling.innerText = label;
 };
-
