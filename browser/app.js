@@ -16,9 +16,16 @@ function renderPatient() {
   console.log(output);
   return function(data) {
     console.log(data);
-    output.innerHTML = data && typeof data === "object"
-      ? data.text.div
-      : String(data);
+    let text = '';
+
+    if (data && typeof data === "object") {
+      text = data.text.div;
+      text = `<button onClick='window.app.updatePatientPhone("${data.id}", "5", "${data.telecom[5].id}", "${data.meta.versionId}", "505-232-5932")'>Update phone number</button>` + text;
+    } else {
+      text = String(data);
+    }
+
+    output.innerHTML = text;
   };
 }
 
@@ -28,10 +35,11 @@ function renderAppt() {
   let text = '';
 
   return function(data) {
-    console.log(data);
+//     console.dir(data);
 
     if (data && typeof data === "object") {
       const appt = data.entry[0].resource;
+      console.log(data);
       text = appt.text.div;
 
       console.log(appt.status);
@@ -65,10 +73,26 @@ App.prototype.fetchAppointments = function() {
   return this.client.request("Appointment?patient=12724066&date=ge2020-01-24T00:00:00.000Z&date=lt2020-01-25T00:00:00.000Z").then(render, render);
 };
 
+App.prototype.updatePatientPhone = function(patientId, telecomIdx, telecomId, version, phone) {
+  console.log(patientId);
+  console.log(phone);
+
+  var respond = function(result) { console.log(result); };
+
+  this.client.patch(
+    `Patient/${patientId}`,
+    [
+      { "op": "replace", "path": `/telecom/${telecomIdx}/value`, "value": phone },
+      { "op": "test", "path": `/telecom/${telecomIdx}/id`, "value": telecomId },
+    ],
+    { headers: { "If-Match": `W/"${version}"` } }
+  ).then(respond, respond);
+}
+
+
 App.prototype.updateApptStatus = function(id, version, status) {
   console.log(id);
   console.log(status);
-
 
   var respond = function(result) { console.log(result); };
 
