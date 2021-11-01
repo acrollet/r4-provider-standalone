@@ -28,9 +28,9 @@
         </div>
         <script type="text/javascript">
             FHIR.oauth2.ready().then(function(client) {
-                var app = new App(client);
-                app.renderContext();
-                app.request("metadata");
+                window.app = new App(client);
+                window.app.renderContext();
+                window.app.request("metadata");
             }).catch(createRenderer("output"));
         </script>
     </body>

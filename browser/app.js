@@ -1,3 +1,4 @@
+
 // Our app is written in ES3 so that it works in older browsers!
 
 function createRenderer(id) {
@@ -21,13 +22,29 @@ function renderPatient() {
   };
 }
 
+
 function renderAppt() {
   const output = document.getElementById("appointments");
+  let text = '';
+
   return function(data) {
     console.log(data);
-    output.innerHTML = data && typeof data === "object"
-      ? data.entry[0].resource.text.div
-      : String(data);
+
+    if (data && typeof data === "object") {
+      const appt = data.entry[0].resource;
+      text = appt.text.div;
+
+      console.log(appt.status);
+      if (appt.status === "checked-in") {
+        text = `<button onClick='window.app.updateApptStatus(${appt.id}, ${appt.meta.versionId}, "fulfilled")'>Set fulfilled</button>` + text;
+      } else {
+        text = `<button onClick='window.app.updateApptStatus(${appt.id}, ${appt.meta.versionId}, "checked-in")'>Check in</button>` + text;
+      }
+    } else {
+      text = String(data);
+    }
+
+    output.innerHTML = text;
   };
 }
 
@@ -48,6 +65,20 @@ App.prototype.fetchAppointments = function() {
   return this.client.request("Appointment?patient=12724066&date=ge2020-01-24T00:00:00.000Z&date=lt2020-01-25T00:00:00.000Z").then(render, render);
 };
 
+App.prototype.updateApptStatus = function(id, version, status) {
+  console.log(id);
+  console.log(status);
+
+
+  var respond = function(result) { console.log(result); };
+
+  this.client.patch(
+    `Appointment/${id}`,
+    [{ "op": "replace", "path": "/status", "value": status }],
+    { headers: { "If-Match": `W/"${version}"` } }
+  ).then(respond, respond);
+}
+
 App.prototype.fetchCurrentUser = function() {
   var render = createRenderer("user");
   render("Loading...");
@@ -64,7 +95,6 @@ App.prototype.renderContext = function() {
   return Promise.all([
     this.fetchPatient(),
     this.fetchAppointments(),
-    this.fetchCurrentEncounter()
   ]);
 };
 
