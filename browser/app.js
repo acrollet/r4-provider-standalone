@@ -56,6 +56,45 @@ function renderAppt() {
   };
 }
 
+function renderQuestionnaireResponse() {
+  const output = document.getElementById("questionnaireResponse");
+  let text = '';
+
+  return function(data) {
+    console.log(JSON.stringify(data));
+
+    if (data && typeof data === "object") {
+
+      const questionnaireResponse = data.entry[0].resource;
+      console.log(questionnaireResponse);
+
+      text = questionnaireResponse.text.div;
+    } else {
+      text = String(data);
+    }
+
+    output.innerHTML = text;
+  };
+}
+
+function renderQuestionnaire() {
+  const output = document.getElementById("questionnaire");
+  let text = '';
+
+  return function(data) {
+    console.log(JSON.stringify(data));
+    console.log(data);
+
+    if (data && typeof data === "object") {
+      text = `<strong>Status:</strong> ${data.status}<br />` + text;
+      text = `<strong>Title:</strong> ${data.title}<br />` + text;
+    } else {
+      text = String(data);
+    }
+
+    output.innerHTML = text;
+  };
+}
 
 function App(client) {
   this.client = client;
@@ -71,6 +110,18 @@ App.prototype.fetchAppointments = function() {
   var render = renderAppt();
   render("Loading appointments...");
   return this.client.request("Appointment?patient=12724066&date=ge2020-01-24T00:00:00.000Z&date=lt2020-01-25T00:00:00.000Z").then(render, render);
+};
+
+App.prototype.fetchQuestionnaireResponse = function() {
+  var render = renderQuestionnaireResponse();
+  render("Loading questionnaire response...");
+  return this.client.request("QuestionnaireResponse?patient=12724066").then(render, render);
+};
+
+App.prototype.fetchQuestionnaire = function() {
+  var render = renderQuestionnaire();
+  render("Loading questionnaire...");
+  return this.client.request("Questionnaire/SH-12724066").then(render, render);
 };
 
 App.prototype.updatePatientPhone = function(patientId, telecomIdx, telecomId, version, phone) {
@@ -119,6 +170,8 @@ App.prototype.renderContext = function() {
   return Promise.all([
     this.fetchPatient(),
     this.fetchAppointments(),
+    this.fetchQuestionnaireResponse(),
+    this.fetchQuestionnaire(),
   ]);
 };
 
